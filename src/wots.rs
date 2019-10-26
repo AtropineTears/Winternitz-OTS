@@ -78,6 +78,17 @@ impl wots {
         };
         return output;
     }
+    pub fn display_info(&self) {
+        println!("METADATA:");
+        println!("==================================================");
+        println!("Winternitz Parameter: {}",self.w);
+        println!("Digest Size: {}",self.n);
+        println!("==================================================");
+        println!("Public Key: {:?}",self.pk);
+        println!();
+        println!("Secret Key: {:?}",self.sk);
+        println!("==================================================");
+    }
 }
 
 impl wots_signature {

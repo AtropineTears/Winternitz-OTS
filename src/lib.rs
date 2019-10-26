@@ -2,7 +2,7 @@ extern crate getrandom;
 extern crate blake2_rfc;
 extern crate hex;
 
-mod wots;
+pub mod wots;
 
 #[cfg(test)]
 mod tests {

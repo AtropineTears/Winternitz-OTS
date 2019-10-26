@@ -2,6 +2,10 @@ use blake2_rfc::blake2b::{Blake2b, blake2b};
 use hex;
 use getrandom;
 
+//Todo
+// 1. Make WotsSignature Struct no longer require most unneeded fields so it is easier to instanitate given only the input and pk
+// 2. Add Function To WotsSignature To Calculate The Cycles Instead Of Storing The Cycles
+
 #[derive(Debug, Clone)]
 pub struct Wots {
     w: usize,
@@ -14,10 +18,10 @@ pub struct WotsSignature {
     w: usize,
     n: usize,
     pub pk: Vec<String>,
-    pub pk_short: Vec<String>,
+    pk_short: Vec<String>,
     pub signature: Vec<String>,
     pub input: String,
-    signature_cycles: Vec<usize>,
+    pub signature_cycles: Vec<usize>,
 }
 
 impl Wots {
@@ -131,15 +135,6 @@ impl Wots {
 }
 
 impl WotsSignature {
-    // Checks whether the Full Public Key and Signature are of the same length
-    fn is_pk_same_length (&self) -> bool {
-        if self.pk_short.len() == self.pk.len() {
-            return true
-        }
-        else {
-            return false
-        }
-    }
     pub fn verify (&self) -> bool {
         let length: usize = self.signature_cycles.len();
 

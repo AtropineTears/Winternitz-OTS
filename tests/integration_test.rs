@@ -1,4 +1,3 @@
-extern crate winternitz_ots;
 use winternitz_ots::wots;
 
 #[test]

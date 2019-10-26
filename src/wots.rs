@@ -3,14 +3,14 @@ use hex;
 use getrandom;
 
 #[derive(Debug, Clone)]
-pub struct wots {
+pub struct Wots {
     w: usize,
     n: usize,
     pk: Vec<String>,
     sk: Vec<String>,
 }
 #[derive(Debug, Clone)]
-pub struct wots_signature {
+pub struct WotsSignature {
     w: usize,
     n: usize,
     pk: Vec<String>,
@@ -19,8 +19,8 @@ pub struct wots_signature {
     signature_cycles: Vec<usize>,
 }
 
-impl wots {
-    pub fn sign (&self, mut input: String) -> wots_signature {
+impl Wots {
+    pub fn sign (&self, mut input: String) -> WotsSignature {
         // Create Empty Signature and Cycle Vector
         let mut signature: Vec<String> = vec![];
         let mut sig_cycles: Vec<usize> = vec![];
@@ -68,7 +68,7 @@ impl wots {
             let sig: String = blake_hash(self.sk[i].clone(),sig_cycles[i]);
             signature.push(sig);
         }
-        let output = wots_signature {
+        let output = WotsSignature {
             w: self.w,
             n: self.n,
             pk: self.pk.clone(),
@@ -91,7 +91,7 @@ impl wots {
     }
 }
 
-impl wots_signature {
+impl WotsSignature {
     pub fn verify (&self) -> bool {
         let length: usize = self.signature_cycles.len();
 
@@ -114,11 +114,10 @@ fn os_32() -> Result<[u8; 32], getrandom::Error> {
 // Used For Signing and Generation
 // s: Hexadecimal String To Be Hashed
 // w: Cycles of Hash Iterations To Be Performed
+#[allow(dead_code)]
 fn blake_hash(s: String, w:usize) -> String {
-    let mut is_generation: bool = false;
-    let mut is_signing: bool = false;
-    let mut is_verifying: bool = false;
-    let mut cycles: usize;
+    let mut _is_generation: bool = false;
+    let mut _is_signing: bool = false;
     
     
     if w == 0usize {
@@ -126,13 +125,13 @@ fn blake_hash(s: String, w:usize) -> String {
     }
     else if w == 16usize {
         // Does Not Mean Anything As You Can Do This From The Secret Key Provided (0000)
-        is_generation = true;
+        _is_generation = true;
     }
     else if w > 16usize {
         panic!("This Amount of Cycles is Not Supported")
     }
     else {
-        is_signing = true;
+        _is_signing = true;
     }
 
     // Turn Hexadecimal Into A Vector of Bytes
@@ -142,7 +141,7 @@ fn blake_hash(s: String, w:usize) -> String {
     let mut blake = _blake.as_bytes();
     
     // Cycles (w - 1) because the hex is decoded into a Vector and then hashed once before the loop
-    cycles = w - 1usize;
+    let cycles = w - 1usize;
 
     // If A Single Hash is Performed and the cycles counter reaches 0, then return the value
     if cycles == 0usize {
@@ -150,14 +149,14 @@ fn blake_hash(s: String, w:usize) -> String {
     }
     
     // MAIN: The Loop Cycle
-    for i in 0..cycles {
+    for _i in 0..cycles {
         _blake = blake2b(32, &[], &blake);
         blake = _blake.as_bytes();
     }
     return hex::encode_upper(blake);
 }
 
-pub fn generate_wots() -> wots {
+pub fn generate_wots() -> Wots {
     let w: usize = 16; // Default Winternitz Parameter (signing 4 bits at a time)
     let n: usize = 32; // Default Digest Size in Bytes (256bits)
     
@@ -166,7 +165,7 @@ pub fn generate_wots() -> wots {
     let mut pk: Vec<String> = vec![];
 
     
-    for i in 0..64 {
+    for _i in 0..64 {
         // Generate Secret Key and Encode In Hexadecimal as a String
         let secret: [u8;32] = os_32().unwrap();
         let secret_hex: String = hex::encode_upper(secret);
@@ -178,7 +177,7 @@ pub fn generate_wots() -> wots {
 
         pk.push(public)
     }
-    let output = wots {
+    let output = Wots {
         w: w, 
         n: n,
         pk: pk,

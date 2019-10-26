@@ -1,4 +1,4 @@
-use blake2_rfc::blake2b::blake2b;
+use blake2_rfc::blake2b::{Blake2b, blake2b};
 use hex;
 use getrandom;
 
@@ -6,25 +6,26 @@ use getrandom;
 pub struct Wots {
     w: usize,
     n: usize,
-    pk: Vec<String>,
-    sk: Vec<String>,
+    pub pk: Vec<String>,
+    pub sk: Vec<String>,
 }
 #[derive(Debug, Clone)]
 pub struct WotsSignature {
     w: usize,
     n: usize,
-    pk: Vec<String>,
-    signature: Vec<String>,
-    input: String,
+    pub pk: Vec<String>,
+    pub pk_short: Vec<String>,
+    pub signature: Vec<String>,
+    pub input: String,
     signature_cycles: Vec<usize>,
 }
 
 impl Wots {
     pub fn sign (&self, mut input: String) -> WotsSignature {
         // Create Empty Signature and Cycle Vector
+        let mut pk_short: Vec<String> = vec![];
         let mut signature: Vec<String> = vec![];
         let mut sig_cycles: Vec<usize> = vec![];
-        //let mut sig_cycles_u8: Vec<u8> = vec![];
         
         // Input Formatting
         input = input.to_ascii_uppercase().clone();
@@ -44,6 +45,7 @@ impl Wots {
         
         // The Loop Itself
         for i in 0..length {
+            
             // Turn Into Byte From Vector
             let byte = input_vector[i];
             
@@ -63,15 +65,19 @@ impl Wots {
                 sig_cycles.push(x as usize);
             }
             else {
-                panic!("The Input Is Not Supported. Please Only Use a String Without Whitespace and in Hexadecimal. Also, omit the beginning 0x.")
+                panic!("The Input Is Not Supported Because Of Invalid Characters.")
             }
             let sig: String = blake_hash(self.sk[i].clone(),sig_cycles[i]);
             signature.push(sig);
+            pk_short.push(self.pk[i].clone());
         }
+        assert_eq!(signature.len(),pk_short.len());
+
         let output = WotsSignature {
             w: self.w,
             n: self.n,
             pk: self.pk.clone(),
+            pk_short: pk_short,
             signature: signature,
             input: input,
             signature_cycles: sig_cycles,
@@ -89,9 +95,51 @@ impl Wots {
         println!("Secret Key: {:?}",self.sk);
         println!("==================================================");
     }
+    pub fn export_pk(&self) -> Vec<String> {
+        return self.pk.clone();
+    }
+    pub fn export_sk(&self) -> Vec<String> {
+        return self.sk.clone();
+    }
+    pub fn export_metadata(&self) -> (usize, usize) {
+        return (self.w, self.n);
+    }
+    pub fn hash_public_key(&self, digest: usize) -> String {
+        // Sanity Check For Digest Input
+        if digest > 64usize || digest == 0usize {
+            panic!("Digest Provided Is Either Too Small Or Too Large. It should be between 1 and 64 bytes.");
+        }
+        
+        // Get Length Of Public Key
+        let pk_length = self.pk.len();
+        
+        // Create Blake2B Hashing Context
+        let mut pk_hash = Blake2b::new(digest);
+
+        // Main Loop Where Hexadecimal Is Converted Into Bytes And Blake2B is updated
+        for i in 0..pk_length {
+            let s = self.pk[i].clone();
+            pk_hash.update(&hex::decode(s).unwrap());
+        }
+        
+        // Finalize Result As Blake2bResult and then convert into bytes which is encoded in hexadecimal
+        let result = pk_hash.finalize();
+        let output: String = hex::encode_upper(result.as_bytes());
+
+        return output;
+    }
 }
 
 impl WotsSignature {
+    // Checks whether the Full Public Key and Signature are of the same length
+    fn is_pk_same_length (&self) -> bool {
+        if self.pk_short.len() == self.pk.len() {
+            return true
+        }
+        else {
+            return false
+        }
+    }
     pub fn verify (&self) -> bool {
         let length: usize = self.signature_cycles.len();
 
@@ -101,6 +149,35 @@ impl WotsSignature {
             assert_eq!(self.pk[i],blake)
         }
         return true;
+    }
+    pub fn verify_public_key_hash (&self, mut input: String) -> bool {
+        input = input.to_uppercase();
+        
+        // Get Digest By Dividing The Hexadecimal Representation By 2
+        let digest = input.len() / 2usize;
+
+        // Get Length Of Public Key
+        let pk_length = self.pk.len();
+        
+        // Create Blake2B Hashing Context
+        let mut pk_hash = Blake2b::new(digest);
+
+        // Main Loop Where Hexadecimal Is Converted Into Bytes And Blake2B is updated
+        for i in 0..pk_length {
+            let s = self.pk[i].clone();
+            pk_hash.update(&hex::decode(s).unwrap());
+        }
+        
+        // Finalize Result As Blake2bResult and then convert into bytes which is encoded in hexadecimal
+        let result = pk_hash.finalize();
+        let output: String = hex::encode_upper(result.as_bytes());
+
+        if input == output {
+            return true
+        }
+        else {
+            return false
+        }
     }
 }
 

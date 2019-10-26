@@ -1,0 +1,12 @@
+[package]
+name = "winternitz-ots"
+version = "0.1.0"
+authors = ["0xSilene <51803887+0xSilene@users.noreply.github.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hex = "0.4.0"
+getrandom = "0.1.13"
+blake2-rfc = "0.2.18"

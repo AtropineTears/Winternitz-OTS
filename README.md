@@ -1,6 +1,10 @@
 # Winternitz-OTS
 
-A Rust Library/Crate For Dealing With The Post-Quantum Digital Signature Scheme **Winternitz One-Time Signature (W-OTS)** using the hash function **Blake2b**.
+A Rust Library/Crate For Dealing With The Post-Quantum Digital Signature Scheme **Winternitz One-Time Signature (W-OTS)** using the hash function **Blake2b**. It uses the parameters:
+
+* w = 16
+* n = 32
+* hash = Blake2b
 
 ## Read About W-OTS
 
@@ -52,19 +56,68 @@ let signatures = sig.signature;
 let input: String = sig.input;
 ```
 
-## Dependecies
+### More In-Depth Usage
+
+```rust
+extern crate winternitz_ots;
+use winternitz_ots::wots;
+
+fn main() {
+    // Have A Hexadecimal String You Would Like To Sign
+    let hex_string: String = String::from("ECC4C3134F80E54C08BAAE1A3F3BDC07BB3AD3906FF62D0D3DFC1EE87AE83194");
+    
+    // Generate W-OTS Keypair | Get The Hash Of The Public Key (For An Address For Example) using a digest from 1-64
+    let keypair = wots::generate_wots();
+    let public_key_hash = keypair.hash_public_key(8);
+    
+    // Export Public Key or Private Key; You may also wish to export metadata
+    let pk = keypair.export_pk();
+    let sk = keypair.export_sk();
+    let (w, n) = keypair.export_metadata();
+
+    // Use The Generate W-OTS Keypair
+    let signature = keypair.sign(hex_string);
+    
+    // Check Whether The Signature Is Valid
+    let is_signature_valid: bool = signature.verify();
+
+    // Signature Attributes
+        // A Vector of The Input Into Its Corresponding Value From 0-15 (for w=16)
+    let input = &signature.input;
+    let is_pk_hash_real = signature.verify_public_key_hash(public_key_hash.clone());
+
+    println!();
+    println!("PK[0]: {}",pk[0]);
+    println!("PK[63]: {}",pk[63]);
+    println!("SK[0]: {}",sk[0]);
+    println!("SK[63]: {}",sk[63]);
+    println!();
+    println!("Public Key Address: 0x{}",public_key_hash);
+    println!("Hash: Blake2b");
+    println!("w: {}",w);
+    println!("n: {}",n);
+    println!();
+    println!("Input: {}",input);
+    println!();
+    println!("Is Signature Valid: {}",is_signature_valid);
+    println!("Is Public Key Address Valid For Given Public Key: {}",is_pk_hash_real);
+    println!();
+}
+```
+
+## Dependencies
 
 This library relies on the following crates:
 
-* getrandom
+* **getrandom**
 
 > A Rust Crate that acts as a **CSPRNG** through the **Operating System** as opposed to in user-space. It supports a wide-variety of sources to get **cryptographic randomness** from.
 
-* blake2-rfc
+* **blake2-rfc**
 
 > A Rust Implementation of the **Blake2b Hashing Function**, a hashing algorithm based around **ChaCha20**. This function was chosen due to its **speed**, surpassing both MD5 and SHA1, while remaining as secure, if not more secure, than SHA256.
 
-* hex
+* **hex**
 
 > A Rust Crate For Converting Between **Hexadecimal** and **Byte Vectors**
 

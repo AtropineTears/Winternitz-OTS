@@ -9,11 +9,6 @@ readme = "https://github.com/0xSilene/Winternitz-OTS/blob/master/README.md"
 keywords = ["crypto", "cryptography", "post-quantum", "security", "signature"]
 categories = ["cryptography", "authentication","algorithms"]
 license = "MIT AND Apache-2.0"
-maintenance = { status = "experimental" }
-
-[[bin]]
-name = "bin"
-path = "src/bin.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

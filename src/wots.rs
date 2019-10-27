@@ -2,10 +2,6 @@ use blake2_rfc::blake2b::{Blake2b, blake2b};
 use hex;
 use getrandom;
 
-//Todo
-// 1. Make WotsSignature Struct no longer require most unneeded fields so it is easier to instanitate given only the input and pk
-// 2. Add Function To WotsSignature To Calculate The Cycles Instead Of Storing The Cycles
-
 #[derive(Debug, Clone)]
 pub struct Wots {
     w: usize,
@@ -15,33 +11,21 @@ pub struct Wots {
 }
 #[derive(Debug, Clone)]
 pub struct WotsSignature {
-    w: usize,
-    n: usize,
     pub pk: Vec<String>,
-    pk_short: Vec<String>,
-    pub signature: Vec<String>,
     pub input: String,
-    pub signature_cycles: Vec<usize>,
+    pub signature: Vec<String>,
+    //pub signature_cycles: Vec<usize>,
 }
 
 impl Wots {
-    pub fn sign (&self, mut input: String) -> WotsSignature {
+    pub fn sign (&self, input: String) -> WotsSignature {
         // Create Empty Signature and Cycle Vector
-        let mut pk_short: Vec<String> = vec![];
         let mut signature: Vec<String> = vec![];
         let mut sig_cycles: Vec<usize> = vec![];
         
         // Input Formatting
-        input = input.to_ascii_uppercase().clone();
-        let input_vector = input.clone().into_bytes();
-
-        // Remove Preceding 0x (Make Sure To Make variable input_vector mutable before changing)
-        /*
-        if input_vector[0] == 48 && input_vector[1] == 120 {
-            input_vector.remove(0);
-            input_vector.remove(1);
-        }
-        */
+        let input_uppercase = input.to_ascii_uppercase().clone();
+        let input_vector = input_uppercase.clone().into_bytes();
         
         // Get Length of String and Assert It Is Not Longer Than PK
         let length: usize = input_vector.len();
@@ -73,31 +57,15 @@ impl Wots {
             }
             let sig: String = blake_hash(self.sk[i].clone(),sig_cycles[i]);
             signature.push(sig);
-            pk_short.push(self.pk[i].clone());
         }
-        assert_eq!(signature.len(),pk_short.len());
 
         let output = WotsSignature {
-            w: self.w,
-            n: self.n,
             pk: self.pk.clone(),
-            pk_short: pk_short,
-            signature: signature,
             input: input,
-            signature_cycles: sig_cycles,
+            signature: signature,
+            //signature_cycles: sig_cycles,
         };
         return output;
-    }
-    pub fn display_info(&self) {
-        println!("METADATA:");
-        println!("==================================================");
-        println!("Winternitz Parameter: {}",self.w);
-        println!("Digest Size: {}",self.n);
-        println!("==================================================");
-        println!("Public Key: {:?}",self.pk);
-        println!();
-        println!("Secret Key: {:?}",self.sk);
-        println!("==================================================");
     }
     pub fn export_pk(&self) -> Vec<String> {
         return self.pk.clone();
@@ -135,11 +103,47 @@ impl Wots {
 }
 
 impl WotsSignature {
+    fn cycle(&self, input: String) -> Vec<usize> {
+        let mut sig_cycles: Vec<usize> = vec![];
+
+        // Input Formatting
+        let input_uppercase = input.to_ascii_uppercase().clone();
+        let input_vector = input_uppercase.clone().into_bytes();
+        
+        // Get Length of String and Assert It Is Not Longer Than PK
+        let length: usize = input_vector.len();
+
+        for i in 0..length { 
+            // Turn Into Byte From Vector
+            let byte = input_vector[i];
+            
+            // HEX: 0-9 (0-9)
+            if byte >= 48 && byte <= 57 {
+                let x: u8 = byte - 48u8;
+                sig_cycles.push(x as usize);
+            }
+            // HEX: A-F (10-15)
+            else if byte >= 65u8 && byte <= 70u8 {
+                let x: u8 = byte - 55u8;
+                sig_cycles.push(x as usize);
+            }
+            // HEX: a-f (10-15)
+            else if byte >= 97 && byte <= 102 {
+                let x: u8 = byte - 87u8;
+                sig_cycles.push(x as usize);
+            }
+            else {
+                panic!("The Input Is Not Supported Because Of Invalid Characters.")
+            }
+        }
+        return sig_cycles;
+    }
     pub fn verify (&self) -> bool {
-        let length: usize = self.signature_cycles.len();
+        let signature_cycles: Vec<usize> = self.cycle(self.input.clone());
+        let length: usize = signature_cycles.len();
 
         for i in 0..length {
-            let cycle: usize = 16usize - self.signature_cycles[i];
+            let cycle: usize = 16usize - signature_cycles[i];
             let blake: String = blake_hash(self.signature[i].clone(),cycle);
             assert_eq!(self.pk[i],blake)
         }

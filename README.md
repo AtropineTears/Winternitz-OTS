@@ -105,6 +105,17 @@ fn main() {
 }
 ```
 
+## To-Do
+
+1. Add more tests / examples
+2. Refactor Code and Reduce Memory Footprint
+3. Attempt To Make Code Secure Against Side-Channel Attacks and Test For Security Vulnerabilties
+4. Complete Benchmarks
+
+---
+
+A Winternitz-OTS+ (WOTS+) version in Rust is also currently in the works.
+
 ## Dependencies
 
 This library relies on the following crates:

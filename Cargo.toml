@@ -10,6 +10,10 @@ keywords = ["crypto", "cryptography", "post-quantum", "security", "signature"]
 categories = ["cryptography", "authentication","algorithms"]
 license = "MIT AND Apache-2.0"
 
+[[example]]
+name = "1"
+path = "examples/example_usage.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

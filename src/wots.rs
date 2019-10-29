@@ -2,19 +2,18 @@ use blake2_rfc::blake2b::{Blake2b, blake2b};
 use hex;
 use getrandom;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Default)]
 pub struct Wots {
     w: usize,
     n: usize,
     pub pk: Vec<String>,
     pub sk: Vec<String>,
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Default)]
 pub struct WotsSignature {
     pub pk: Vec<String>,
     pub input: String,
     pub signature: Vec<String>,
-    //pub signature_cycles: Vec<usize>,
 }
 
 impl Wots {
@@ -55,6 +54,7 @@ impl Wots {
             else {
                 panic!("The Input Is Not Supported Because Of Invalid Characters.")
             }
+            // TODO: Remove Clone
             let sig: String = blake_hash(self.sk[i].clone(),sig_cycles[i]);
             signature.push(sig);
         }

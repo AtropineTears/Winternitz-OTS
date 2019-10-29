@@ -1,10 +1,8 @@
 # Winternitz-OTS
 
-A Rust Library/Crate For Dealing With The Post-Quantum Digital Signature Scheme **Winternitz One-Time Signature (W-OTS)** using the hash function **Blake2b**. It uses the parameters:
+[![Build Status](https://travis-ci.org/0xSilene/Winternitz-OTS.svg?branch=master)](https://travis-ci.org/0xSilene/Winternitz-OTS)
 
-* w = 16
-* n = 32
-* hash = Blake2b
+A Rust Library/Crate For Dealing With The Post-Quantum Digital Signature Scheme **Winternitz One-Time Signature (W-OTS)** using the hash function **Blake2b**.
 
 ## Read About W-OTS
 
@@ -108,7 +106,7 @@ fn main() {
 ## To-Do
 
 1. Add more tests / examples
-2. Refactor Code and Reduce Memory Footprint
+2. Refactor Code A Lot and Reduce Memory Footprint
 3. Attempt To Make Code Secure Against Side-Channel Attacks and Test For Security Vulnerabilties
 4. Complete Benchmarks
 
@@ -134,5 +132,17 @@ This library relies on the following crates:
 
 ## License
 
-* MIT License
-* Apache License 2.0
+Licensed under either of
+
+ * Apache License, Version 2.0
+   ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license
+   ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+## Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
+dual licensed as above, without any additional terms or conditions.

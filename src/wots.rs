@@ -2,6 +2,13 @@ use blake2_rfc::blake2b::{Blake2b, blake2b};
 use hex;
 use getrandom;
 
+
+/// # W-OTS Keypair
+/// This struct contains the W-OTS Keypair, including:
+/// - w: The Wintertnitz Parameter
+/// - n: The Digest Length
+/// - pk: The Public Key as a Vector of Strings
+/// - sk: The Private Key as a Vector of Strings
 #[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Default)]
 pub struct Wots {
     w: usize,
@@ -9,6 +16,9 @@ pub struct Wots {
     pub pk: Vec<String>,
     pub sk: Vec<String>,
 }
+
+/// # W-OTS Signature
+/// This struct contains the signature, including the public key, input string, and the signature itself
 #[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Default)]
 pub struct WotsSignature {
     pub pk: Vec<String>,
@@ -17,6 +27,8 @@ pub struct WotsSignature {
 }
 
 impl Wots {
+    /// # Signature Function
+    /// This function will let you sign an input hexadecimal string.
     pub fn sign (&self, input: String) -> WotsSignature {
         // Create Empty Signature and Cycle Vector
         let mut signature: Vec<String> = vec![];
@@ -67,12 +79,15 @@ impl Wots {
         };
         return output;
     }
+    /// # Export Public Key
     pub fn export_pk(&self) -> Vec<String> {
         return self.pk.clone();
     }
+    /// # Export Private Key
     pub fn export_sk(&self) -> Vec<String> {
         return self.sk.clone();
     }
+    /// # Export Metadata
     pub fn export_metadata(&self) -> (usize, usize) {
         return (self.w, self.n);
     }

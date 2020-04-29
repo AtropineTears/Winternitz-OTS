@@ -1,6 +1,6 @@
 # Winternitz-OTS
 
-![Crates.io](https://img.shields.io/crates/v/winternitz-ots)[![Build Status](https://travis-ci.org/0xSilene/Winternitz-OTS.svg?branch=master)](https://travis-ci.org/0xSilene/Winternitz-OTS)![Crates.io](https://img.shields.io/crates/l/winternitz-ots)
+[![Crates.io](https://img.shields.io/crates/v/winternitz-ots)](https://crates.io/crates/winternitz-ots)[![Build Status](https://travis-ci.org/0xSilene/Winternitz-OTS.svg?branch=master)](https://travis-ci.org/0xSilene/Winternitz-OTS)![Crates.io](https://img.shields.io/crates/l/winternitz-ots)
 
 A Rust Library/Crate For Dealing With The Post-Quantum Digital Signature Scheme **Winternitz One-Time Signature (W-OTS)** using the hash function **Blake2b**.
 
@@ -63,11 +63,11 @@ use winternitz_ots::wots;
 fn main() {
     // Have A Hexadecimal String You Would Like To Sign
     let hex_string: String = String::from("ECC4C3134F80E54C08BAAE1A3F3BDC07BB3AD3906FF62D0D3DFC1EE87AE83194");
-    
+
     // Generate W-OTS Keypair | Get The Hash Of The Public Key (For An Address For Example) using a digest from 1-64
     let keypair = wots::generate_wots();
     let public_key_hash = keypair.hash_public_key(8);
-    
+
     // Export Public Key or Private Key; You may also wish to export metadata
     let pk = keypair.export_pk();
     let sk = keypair.export_sk();
@@ -75,7 +75,7 @@ fn main() {
 
     // Use The Generate W-OTS Keypair
     let signature = keypair.sign(hex_string);
-    
+
     // Check Whether The Signature Is Valid
     let is_signature_valid: bool = signature.verify();
 
@@ -114,22 +114,6 @@ fn main() {
 
 A Winternitz-OTS+ (WOTS+) version in Rust is also currently in the works.
 
-## Dependencies
-
-This library relies on the following crates:
-
-* **getrandom**
-
-> A Rust Crate that acts as a **CSPRNG** through the **Operating System** as opposed to in user-space. It supports a wide-variety of sources to get **cryptographic randomness** from.
-
-* **blake2-rfc**
-
-> A Rust Implementation of the **Blake2b Hashing Function**, a hashing algorithm based around **ChaCha20**. This function was chosen due to its **speed**, surpassing both MD5 and SHA1, while remaining as secure, if not more secure, than SHA256.
-
-* **hex**
-
-> A Rust Crate For Converting Between **Hexadecimal** and **Byte Vectors**
-
 ## License
 
 Licensed under either of
@@ -143,5 +127,4 @@ at your option.
 ## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be
-dual licensed as above, without any additional terms or conditions.
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

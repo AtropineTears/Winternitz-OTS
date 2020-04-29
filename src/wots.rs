@@ -5,10 +5,10 @@ use getrandom;
 
 /// # W-OTS Keypair
 /// This struct contains the W-OTS Keypair, including:
-/// - w: The Wintertnitz Parameter
-/// - n: The Digest Length
-/// - pk: The Public Key as a Vector of Strings
-/// - sk: The Private Key as a Vector of Strings
+/// - w: The Wintertnitz Parameter, as a usize
+/// - n: The Digest Length in Bytes, as a usize
+/// - pk: The Public Key, as a Vector of Strings
+/// - sk: The Private Key, as a Vector of Strings
 #[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Default)]
 pub struct Wots {
     w: usize,
@@ -18,7 +18,10 @@ pub struct Wots {
 }
 
 /// # W-OTS Signature
-/// This struct contains the signature, including the public key, input string, and the signature itself
+/// This struct contains the signature, including
+/// - public key: The Public Key as a vector of hexadecimal strings
+/// - input string: A Hexadecimal String, with the default going up to 256bits if generated using the function
+/// - signature: The Signature itself, as a vector of hexadecimal strings
 #[derive(Debug, Clone, PartialEq, PartialOrd, Hash, Default)]
 pub struct WotsSignature {
     pub pk: Vec<String>,
@@ -28,7 +31,7 @@ pub struct WotsSignature {
 
 impl Wots {
     /// # Signature Function
-    /// This function will let you sign an input hexadecimal string.
+    /// This function will let you sign an input hexadecimal string of up to 256bits.
     pub fn sign (&self, input: String) -> WotsSignature {
         // Create Empty Signature and Cycle Vector
         let mut signature: Vec<String> = vec![];
@@ -91,6 +94,8 @@ impl Wots {
     pub fn export_metadata(&self) -> (usize, usize) {
         return (self.w, self.n);
     }
+    /// # Hashing PK
+    /// This function allows you to hash the public key which can be useful in certain situations.
     pub fn hash_public_key(&self, digest: usize) -> String {
         // Sanity Check For Digest Input
         if digest > 64usize || digest == 0usize {
@@ -153,6 +158,8 @@ impl WotsSignature {
         }
         return sig_cycles;
     }
+    /// # Verification of Signature
+    /// This function allows you to verify the signature against the public key.
     pub fn verify (&self) -> bool {
         let signature_cycles: Vec<usize> = self.cycle(self.input.clone());
         let length: usize = signature_cycles.len();
@@ -164,6 +171,8 @@ impl WotsSignature {
         }
         return true;
     }
+    /// # Verification of Public Key Hash
+    /// This function allows you to verify the hash of the public key. Only useful in a small amount of situations.
     pub fn verify_public_key_hash (&self, mut input: String) -> bool {
         input = input.to_uppercase();
         
@@ -247,6 +256,12 @@ fn blake_hash(s: String, w:usize) -> String {
     return hex::encode_upper(blake);
 }
 
+/// # Generate Default W-OTS Keypair
+/// This function is the main function that allows you to generate a W-OTS Keypair used to sign up to 32bytes (256bits) and constructs the Wots struct.
+/// - w: Winternitz Parameter (16)
+/// - n: Digest Size in Bytes (32)
+/// - sk: Secret Key as a vector of hexadecimal
+/// - pk: Public Key as a vector of hexadecimal
 pub fn generate_wots() -> Wots {
     let w: usize = 16; // Default Winternitz Parameter (signing 4 bits at a time)
     let n: usize = 32; // Default Digest Size in Bytes (256bits)

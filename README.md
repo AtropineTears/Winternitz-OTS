@@ -1,6 +1,8 @@
 # Winternitz-OTS
 
-[![Crates.io](https://img.shields.io/crates/v/winternitz-ots)](https://crates.io/crates/winternitz-ots)[![Build Status](https://travis-ci.org/0xSilene/Winternitz-OTS.svg?branch=master)](https://travis-ci.org/0xSilene/Winternitz-OTS)![Crates.io](https://img.shields.io/crates/l/winternitz-ots)
+[![Crates.io](https://img.shields.io/crates/v/winternitz-ots)](https://crates.io/crates/winternitz-ots)
+[![Build Status](https://travis-ci.org/0xSilene/Winternitz-OTS.svg?branch=master)](https://travis-ci.org/0xSilene/Winternitz-OTS)
+![Crates.io](https://img.shields.io/crates/l/winternitz-ots)
 
 A Rust Library/Crate For Dealing With The Post-Quantum Digital Signature Scheme **Winternitz One-Time Signature (W-OTS)** using the hash function **Blake2b**.
 
@@ -119,8 +121,6 @@ A Winternitz-OTS+ (WOTS+) version in Rust is also currently in the works.
 Licensed under either of
 
 * Apache License, Version 2.0
-
-* MIT license
 
 at your option.
 

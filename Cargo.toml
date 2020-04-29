@@ -1,13 +1,14 @@
 [package]
 name = "winternitz-ots"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["0xSilene <51803887+0xSilene@users.noreply.github.com>"]
 edition = "2018"
 description = "A Rust Library For Interacting With Winternitz One-Time Signatures, a Hash-Based, Post-Quantum Digital Signature Scheme Based On Lamport Signatures. This implementation uses the hash function Blake2b for all hashing, due to its speed and security, with a winternitz parameter of 16, and a digest size (n) of 32 bytes."
 repository = "https://github.com/0xSilene/Winternitz-OTS"
 keywords = ["crypto", "cryptography", "post-quantum", "security", "signature"]
 categories = ["cryptography", "authentication","algorithms"]
-license = "MIT OR Apache-2.0"
+license = "Apache-2.0"
+readme="README.md"
 
 [[example]]
 name = "1"
@@ -19,6 +20,6 @@ travis-ci = { repository = "https://github.com/0xSilene/Winternitz-OTS", branch 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-hex = "0.4.0"
-getrandom = "0.1.13"
+hex = "0.4.2"
+getrandom = "0.1.14"
 blake2-rfc = "0.2.18"

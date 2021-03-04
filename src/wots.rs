@@ -5,7 +5,7 @@ use getrandom;
 
 /// # W-OTS Keypair
 /// This struct contains the W-OTS Keypair, including:
-/// - w: The Wintertnitz Parameter, as a usize
+/// - w: The Wintertnitz Parameter, as a usize. It should be 4 or 16.
 /// - n: The Digest Length in Bytes, as a usize
 /// - pk: The Public Key, as a Vector of Strings
 /// - sk: The Private Key, as a Vector of Strings

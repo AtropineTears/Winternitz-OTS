@@ -1,7 +1,6 @@
-use blake2_rfc::blake2b::{Blake2b, blake2b};
-use hex;
+use blake2_rfc::blake2b::{blake2b, Blake2b};
 use getrandom;
-
+use hex;
 
 /// # W-OTS Keypair
 /// This struct contains the W-OTS Keypair, including:
@@ -32,25 +31,24 @@ pub struct WotsSignature {
 impl Wots {
     /// # Signature Function
     /// This function will let you sign an input hexadecimal string of up to 256bits.
-    pub fn sign (&self, input: String) -> WotsSignature {
+    pub fn sign(&self, input: String) -> WotsSignature {
         // Create Empty Signature and Cycle Vector
         let mut signature: Vec<String> = vec![];
         let mut sig_cycles: Vec<usize> = vec![];
-        
+
         // Input Formatting
         let input_uppercase = input.to_ascii_uppercase().clone();
         let input_vector = input_uppercase.clone().into_bytes();
-        
+
         // Get Length of String and Assert It Is Not Longer Than PK
         let length: usize = input_vector.len();
         assert!(self.pk.len() >= length);
-        
+
         // The Loop Itself
         for i in 0..length {
-            
             // Turn Into Byte From Vector
             let byte = input_vector[i];
-            
+
             // HEX: 0-9 (0-9)
             if byte >= 48 && byte <= 57 {
                 let x: u8 = byte - 48u8;
@@ -65,12 +63,28 @@ impl Wots {
             else if byte >= 97 && byte <= 102 {
                 let x: u8 = byte - 87u8;
                 sig_cycles.push(x as usize);
-            }
-            else {
+            } else {
                 panic!("The Input Is Not Supported Because Of Invalid Characters.")
             }
             // TODO: Remove Clone
-            let sig: String = blake_hash(self.sk[i].clone(),sig_cycles[i]);
+            let sig: String = blake_hash(self.sk[i].clone(), sig_cycles[i]);
+            signature.push(sig);
+        }
+
+        // Calculate Checksum
+        let mut checksum = 0;
+        for i in 0..length {
+            checksum += self.w - 1 - sig_cycles[i];
+        }
+
+        // Convert Checksum to base w and sign as well
+        let log_2_w = f64::log2(self.w as f64).round() as usize;
+        let max_cksum_value = f64::log2((length * (self.w - 1)) as f64).round();
+        let len_2 = f64::floor(max_cksum_value / log_2_w as f64) as usize + 1;
+        checksum = checksum << (8 - ((len_2 * log_2_w) % 8));
+        for i in 0..len_2 {
+            let symbol = (checksum >> (log_2_w * (len_2 - 1 - i))) % self.w;
+            let sig: String = blake_hash(self.sk[length + i].clone(), symbol);
             signature.push(sig);
         }
 
@@ -101,10 +115,10 @@ impl Wots {
         if digest > 64usize || digest == 0usize {
             panic!("Digest Provided Is Either Too Small Or Too Large. It should be between 1 and 64 bytes.");
         }
-        
+
         // Get Length Of Public Key
         let pk_length = self.pk.len();
-        
+
         // Create Blake2B Hashing Context
         let mut pk_hash = Blake2b::new(digest);
 
@@ -113,7 +127,7 @@ impl Wots {
             let s = self.pk[i].clone();
             pk_hash.update(&hex::decode(s).unwrap());
         }
-        
+
         // Finalize Result As Blake2bResult and then convert into bytes which is encoded in hexadecimal
         let result = pk_hash.finalize();
         let output: String = hex::encode_upper(result.as_bytes());
@@ -129,14 +143,14 @@ impl WotsSignature {
         // Input Formatting
         let input_uppercase = input.to_ascii_uppercase().clone();
         let input_vector = input_uppercase.clone().into_bytes();
-        
+
         // Get Length of String and Assert It Is Not Longer Than PK
         let length: usize = input_vector.len();
 
-        for i in 0..length { 
+        for i in 0..length {
             // Turn Into Byte From Vector
             let byte = input_vector[i];
-            
+
             // HEX: 0-9 (0-9)
             if byte >= 48 && byte <= 57 {
                 let x: u8 = byte - 48u8;
@@ -151,8 +165,7 @@ impl WotsSignature {
             else if byte >= 97 && byte <= 102 {
                 let x: u8 = byte - 87u8;
                 sig_cycles.push(x as usize);
-            }
-            else {
+            } else {
                 panic!("The Input Is Not Supported Because Of Invalid Characters.")
             }
         }
@@ -160,28 +173,46 @@ impl WotsSignature {
     }
     /// # Verification of Signature
     /// This function allows you to verify the signature against the public key.
-    pub fn verify (&self) -> bool {
+    pub fn verify(&self) -> bool {
         let signature_cycles: Vec<usize> = self.cycle(self.input.clone());
         let length: usize = signature_cycles.len();
 
         for i in 0..length {
             let cycle: usize = 16usize - signature_cycles[i];
-            let blake: String = blake_hash(self.signature[i].clone(),cycle);
-            assert_eq!(self.pk[i],blake)
+            let blake: String = blake_hash(self.signature[i].clone(), cycle);
+            assert_eq!(self.pk[i], blake)
         }
+
+        // Calculate Checksum
+        let mut checksum = 0;
+        for i in 0..length {
+            checksum += 16 - 1 - signature_cycles[i];
+        }
+
+        // Convert Checksum to base w and compare with PK as well
+        let log_2_w = f64::log2(16 as f64).round() as usize;
+        let max_cksum_value = f64::log2((length * (16 - 1)) as f64).round();
+        let len_2 = f64::floor(max_cksum_value / log_2_w as f64) as usize + 1;
+        checksum = checksum << (8 - ((len_2 * log_2_w) % 8));
+        for i in 0..len_2 {
+            let cycle: usize = (checksum >> (log_2_w * (len_2 - 1 - i))) % 16;
+            let blake: String = blake_hash(self.signature[length + i].clone(), 16 - cycle);
+            assert_eq!(self.pk[length + i], blake);
+        }
+
         return true;
     }
     /// # Verification of Public Key Hash
     /// This function allows you to verify the hash of the public key. Only useful in a small amount of situations.
-    pub fn verify_public_key_hash (&self, mut input: String) -> bool {
+    pub fn verify_public_key_hash(&self, mut input: String) -> bool {
         input = input.to_uppercase();
-        
+
         // Get Digest By Dividing The Hexadecimal Representation By 2
         let digest = input.len() / 2usize;
 
         // Get Length Of Public Key
         let pk_length = self.pk.len();
-        
+
         // Create Blake2B Hashing Context
         let mut pk_hash = Blake2b::new(digest);
 
@@ -190,16 +221,15 @@ impl WotsSignature {
             let s = self.pk[i].clone();
             pk_hash.update(&hex::decode(s).unwrap());
         }
-        
+
         // Finalize Result As Blake2bResult and then convert into bytes which is encoded in hexadecimal
         let result = pk_hash.finalize();
         let output: String = hex::encode_upper(result.as_bytes());
 
         if input == output {
-            return true
-        }
-        else {
-            return false
+            return true;
+        } else {
+            return false;
         }
     }
 }
@@ -215,22 +245,18 @@ fn os_32() -> Result<[u8; 32], getrandom::Error> {
 // s: Hexadecimal String To Be Hashed
 // w: Cycles of Hash Iterations To Be Performed
 #[allow(dead_code)]
-fn blake_hash(s: String, w:usize) -> String {
+fn blake_hash(s: String, w: usize) -> String {
     let mut _is_generation: bool = false;
     let mut _is_signing: bool = false;
-    
-    
+
     if w == 0usize {
         return s;
-    }
-    else if w == 16usize {
+    } else if w == 16usize {
         // Does Not Mean Anything As You Can Do This From The Secret Key Provided (0000)
         _is_generation = true;
-    }
-    else if w > 16usize {
+    } else if w > 16usize {
         panic!("This Amount of Cycles is Not Supported")
-    }
-    else {
+    } else {
         _is_signing = true;
     }
 
@@ -239,7 +265,7 @@ fn blake_hash(s: String, w:usize) -> String {
     // Turn Bytes Into An Array of Bytes
     let mut _blake = blake2b(32, &[], bytes.as_slice());
     let mut blake = _blake.as_bytes();
-    
+
     // Cycles (w - 1) because the hex is decoded into a Vector and then hashed once before the loop
     let cycles = w - 1usize;
 
@@ -247,7 +273,7 @@ fn blake_hash(s: String, w:usize) -> String {
     if cycles == 0usize {
         return hex::encode_upper(&blake);
     }
-    
+
     // MAIN: The Loop Cycle
     for _i in 0..cycles {
         _blake = blake2b(32, &[], &blake);
@@ -265,26 +291,29 @@ fn blake_hash(s: String, w:usize) -> String {
 pub fn generate_wots() -> Wots {
     let w: usize = 16; // Default Winternitz Parameter (signing 4 bits at a time)
     let n: usize = 32; // Default Digest Size in Bytes (256bits)
-    
+
     // Create Secret Key and Public Key Pair
     let mut sk: Vec<String> = vec![];
     let mut pk: Vec<String> = vec![];
 
-    
-    for _i in 0..64 {
+    let log_2_w = f64::log2(16 as f64).round() as usize;
+    let max_cksum_value = f64::log2((64 * (16 - 1)) as f64).round();
+    let len_2 = f64::floor(max_cksum_value / log_2_w as f64) as usize + 1;
+
+    for _i in 0..64 + len_2 {
         // Generate Secret Key and Encode In Hexadecimal as a String
-        let secret: [u8;32] = os_32().unwrap();
+        let secret: [u8; 32] = os_32().unwrap();
         let secret_hex: String = hex::encode_upper(secret);
 
         sk.push(secret_hex.clone());
-        
+
         // Generate Public Key
         let public = blake_hash(secret_hex, w);
 
         pk.push(public)
     }
     let output = Wots {
-        w: w, 
+        w: w,
         n: n,
         pk: pk,
         sk: sk,

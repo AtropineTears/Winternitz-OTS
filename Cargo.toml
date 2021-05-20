@@ -1,6 +1,6 @@
 [package]
 name = "winternitz-ots"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["0xAtropine"]
 edition = "2018"
 description = "A Rust Library For Interacting With Winternitz One-Time Signatures, a Hash-Based, Post-Quantum Digital Signature Scheme Based On Lamport Signatures. This implementation uses the hash function Blake2b for all hashing, due to its speed and security, with a winternitz parameter of 16, and a digest size (n) of 32 bytes."
